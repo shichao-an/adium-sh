@@ -1,0 +1,18 @@
+adium-scpt
+==========
+
+Command-line AppleScript scripts for Adium
+
+Usage
+-----
+adium-send.scpt
+
+    $ ./adium-send.scpt <buddy> <message>
+
+
+Examples
+--------
+
+    $ BUDDY="buddy@gmail.com"
+    $ ./adium-send.scpt $BUDDY hello
+
