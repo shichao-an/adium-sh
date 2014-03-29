@@ -15,6 +15,9 @@ setup(
     install_requires=['argparse', 'psutil'],
     packages=find_packages(exclude=['tests']),
     include_package_data=True,
+    package_data={
+        'adiumsh': ['*.scpt'],
+    },
     zip_safe=False,
     entry_points={
         'console_scripts': [
