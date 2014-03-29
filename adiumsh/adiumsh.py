@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function, unicode_literals, absolute_import
 import glob
 import os
 import shlex
 import subprocess
+import time
 from .utils import is_process_running
 from .settings import PACKAGE_PATH
 from .command import parse_args
 
 
 class Adium(object):
-    script_prefix = 'adium-'
-    script_ext = '.scpt'
-    open_cmd = 'open -a Adium'
+    script_prefix = b'adium-'
+    script_ext = b'.scpt'
+    open_cmd = b'open -a Adium'
 
     def __init__(self, buddy=None, account=None, service=None):
         """
@@ -21,6 +23,10 @@ class Adium(object):
         """
         if not self.is_running:
             self.start()
+            while not self.is_running:
+                time.sleep(1)
+            # Wait for Adium to load accounts
+            time.sleep(1)
         self.buddy = buddy
         self.account = account
         self.service = service
@@ -67,7 +73,7 @@ class Adium(object):
                 if p.returncode != 0:
                     raise ExecutionError(stderr)
                 return stdout
-            except OSError, e:
+            except OSError as e:
                 raise e
         else:
             raise DoesNotExist(script + 'does not exist')
