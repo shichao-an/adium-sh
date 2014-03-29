@@ -17,6 +17,7 @@ The current features are:
 
 Installation
 ------------
+::
 
     $ pip install adium-sh
 
