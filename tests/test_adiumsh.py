@@ -1,10 +1,29 @@
+import os
 from unittest import TestCase
 from scripttest import TestFileEnvironment
 import shlex
+import stat
 import time
 from adiumsh import adiumsh
 from adiumsh.utils import get_process
+from adiumsh.settings import REPO_PATH
 from .secret import TEST_ACCOUNT, TEST_SERVICE, TEST_ALIAS
+
+
+def create_run_script():
+    run_script = os.path.join(REPO_PATH, 'run.py')
+    content = '#!/usr/bin/env python\n'
+    content += 'from adiumsh.adiumsh import main\n\n\n'
+    content += 'main()'
+    if not os.path.exists(run_script):
+        create_executable(run_script, content)
+
+
+def create_executable(path, content):
+    with open(path, 'w') as f:
+        f.write(content)
+    s = os.stat(path)
+    os.chmod(path, s.st_mode | stat.S_IEXEC)
 
 
 class TestAdiumsh(TestCase):
