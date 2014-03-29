@@ -5,6 +5,7 @@ import shlex
 import subprocess
 from .utils import is_process_running
 from .settings import PACKAGE_PATH
+from .command import parse_args
 
 
 class Adium(object):
@@ -12,9 +13,17 @@ class Adium(object):
     script_ext = '.scpt'
     open_cmd = 'open -a Adium'
 
-    def __init__(self):
+    def __init__(self, buddy=None, account=None, service=None):
+        """
+        :param buddy: account name of the target user to chat with
+        :param account: default account to use
+        :param service: default service of the account
+        """
         if not self.is_running:
             self.start()
+        self.buddy = buddy
+        self.account = account
+        self.service = service
 
     @property
     def is_running(self):
@@ -27,7 +36,8 @@ class Adium(object):
 
     def send_alias(self, alias, message, account, service):
         """Send a message to an alias"""
-        pass
+        name = self.get_name(alias, account, service)
+        self.send(name, message)
 
     def send(self, name, message):
         """Send a message"""
@@ -61,7 +71,7 @@ class Adium(object):
         if name:
             return name.rstrip('\n')
         else:
-            return None
+            raise DoesNotExist('This alias does not exist in your account')
 
 
 class DoesNotExist(Exception):
@@ -73,4 +83,5 @@ class ExecutionError(Exception):
 
 
 def main():
-    pass
+    args = parse_args()
+    print args
