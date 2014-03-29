@@ -2,7 +2,7 @@
 from __future__ import print_function, unicode_literals, absolute_import
 import glob
 import os
-import shlex
+#import shlex
 import subprocess
 import time
 from .utils import is_process_running
@@ -11,9 +11,9 @@ from .command import parse_args
 
 
 class Adium(object):
-    script_prefix = b'adium-'
-    script_ext = b'.scpt'
-    open_cmd = b'open -a Adium'
+    script_prefix = r'adium-'
+    script_ext = r'.scpt'
+    open_cmd = ['open', '-a', 'Adium']
 
     def __init__(self, buddy=None, account=None, service=None):
         """
@@ -38,7 +38,7 @@ class Adium(object):
 
     def start(self):
         """Start the application"""
-        subprocess.Popen(shlex.split(self.open_cmd))
+        subprocess.Popen(self.open_cmd)
 
     def send_alias(self, message, alias, account=None, service=None):
         """Send a message to an alias"""
@@ -86,7 +86,7 @@ class Adium(object):
             service = self.service
         name = self.call_script('name', [service, account, alias])
         if name:
-            return name.rstrip('\n')
+            return name.rstrip(b'\n')
         else:
             raise DoesNotExist('This alias does not exist in your account')
 

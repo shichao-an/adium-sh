@@ -34,7 +34,6 @@ class TestAdiumsh(TestCase):
         if proc:
             proc.terminate()
         time.sleep(1)
-
         cls.adium = adiumsh.Adium(account=TEST_ACCOUNT,
                                   service=TEST_SERVICE)
 

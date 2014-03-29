@@ -1,3 +1,2 @@
 argparse
-configparser
 psutil==2.0.0

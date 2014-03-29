@@ -8,3 +8,4 @@ run.py
 .adiumsh
 tests/secret.py
 test-output
+.tox
