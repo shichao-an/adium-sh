@@ -3,7 +3,7 @@
 on run argv
 	tell application "Adium"
 		set buddy to item 1 of argv
-		set user to get contact buddy of account
+		set user to get contact buddy 
 		if not (exists (chats whose contacts contains user)) then
 			if not (exists (first chat window)) then
 				tell account of user

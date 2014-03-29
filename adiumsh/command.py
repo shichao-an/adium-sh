@@ -1,6 +1,6 @@
 import argparse
 import sys
-from .settings import DEFAULT_SERVICE, DEFAULT_ACCOUNT
+from .settings import (DEFAULT_SERVICE, DEFAULT_ACCOUNT, DEFAULT_BUDDY)
 
 
 def parse_args():
@@ -18,18 +18,19 @@ def parse_args():
                              help=account_help)
     parser_send.add_argument('-s', '--service',
                              help='service associated with the account')
-    send_buddy_group = parser_send.add_mutually_exclusive_group(required=True)
+    send_buddy_group = parser_send.add_mutually_exclusive_group()
     send_buddy_group.add_argument('-b', '--buddy',
                                   help='name of the target account')
     send_buddy_group.add_argument('-a', '--alias',
                                   help='alias of the target account')
     args = parser.parse_args()
-
+    if not args.buddy and not args.alias:
+        args.buddy = args.buddy or DEFAULT_BUDDY
     if args.alias and not args.buddy:
         args.service = args.service or DEFAULT_SERVICE
         args.account = args.account or DEFAULT_ACCOUNT
         if not args.service or not args.account:
-            msg = 'Must specify service and account when use alias'
+            msg = 'Must specify service and account when using alias'
             raise parser.error(msg)
     if not args.message:
         message = sys.stdin.read()

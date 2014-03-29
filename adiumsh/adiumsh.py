@@ -34,14 +34,20 @@ class Adium(object):
         """Start the application"""
         subprocess.Popen(shlex.split(self.open_cmd))
 
-    def send_alias(self, alias, message, account, service):
+    def send_alias(self, message, alias, account=None, service=None):
         """Send a message to an alias"""
+        if account is None and self.account is not None:
+            account = self.account
+        if service is None and self.service is not None:
+            service = self.service
         name = self.get_name(alias, account, service)
-        self.send(name, message)
+        self.send(message, name)
 
-    def send(self, name, message):
+    def send(self, message, name=None):
         """Send a message"""
-        self.call_script('send', [message])
+        if name is None and self.buddy is not None:
+            name = self.buddy
+        self.call_script('send', [name, message])
 
     def call_script(self, suffix, args):
         """
@@ -67,6 +73,7 @@ class Adium(object):
             raise DoesNotExist(script + 'does not exist')
 
     def get_name(self, alias, account, service):
+        """Get account name by alias"""
         name = self.call_script('name', [service, account, alias])
         if name:
             return name.rstrip('\n')
@@ -84,4 +91,10 @@ class ExecutionError(Exception):
 
 def main():
     args = parse_args()
-    print args
+    adium = Adium(buddy=args.buddy,
+                  account=args.account,
+                  service=args.service)
+    if args.buddy:
+        adium.send(args.message, args.buddy)
+    else:
+        adium.send_alias(args.message, args.alias)
