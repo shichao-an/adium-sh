@@ -76,7 +76,7 @@ class Adium(object):
             except OSError as e:
                 raise e
         else:
-            raise DoesNotExist(script + 'does not exist')
+            raise DoesNotExist(script + ' does not exist')
 
     def get_name(self, alias, account=None, service=None):
         """Get account name by alias"""
