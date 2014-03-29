@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from twphotos import __version__
+from adiumsh import __version__
 
 
 setup(
@@ -12,7 +12,7 @@ setup(
     author_email='shichao.an@nyu.edu',
     url='https://github.com/shichao-an/adiumsh',
     license='BSD',
-    install_requires=['configparser', 'argparse', 'psutil'],
+    install_requires=['argparse', 'psutil'],
     packages=find_packages(exclude=['tests']),
     include_package_data=True,
     zip_safe=False,

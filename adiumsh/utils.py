@@ -1,6 +1,9 @@
 import os
 import psutil
-import configparser
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
 
 def is_process_running(process_name):
