@@ -78,8 +78,12 @@ class Adium(object):
         else:
             raise DoesNotExist(script + 'does not exist')
 
-    def get_name(self, alias, account, service):
+    def get_name(self, alias, account=None, service=None):
         """Get account name by alias"""
+        if account is None and self.account is not None:
+            account = self.account
+        if service is None and self.service is not None:
+            service = self.service
         name = self.call_script('name', [service, account, alias])
         if name:
             return name.rstrip('\n')

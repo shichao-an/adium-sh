@@ -27,6 +27,10 @@ def parse_args():
     args = parser.parse_args()
     if not args.buddy and not args.alias:
         args.buddy = args.buddy or DEFAULT_BUDDY
+        if not args.buddy:
+            msg = 'Must specify either buddy or alias'
+            raise parser.error(msg)
+
     if args.alias and not args.buddy:
         args.service = args.service or DEFAULT_SERVICE
         args.account = args.account or DEFAULT_ACCOUNT

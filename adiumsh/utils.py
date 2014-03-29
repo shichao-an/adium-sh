@@ -8,6 +8,14 @@ def is_process_running(process_name):
     return process_name in names
 
 
+def get_process(process_name):
+    for proc in psutil.process_iter():
+        if proc.name() == process_name:
+            return proc
+    else:
+        return None
+
+
 def get_config(path, section):
     config = configparser.ConfigParser()
     if os.path.exists(path):

@@ -5,7 +5,7 @@ from twphotos import __version__
 setup(
     name='adium-sh',
     version=__version__,
-    description="Command-line wrapper of Adium",
+    description='Command-line wrapper of Adium',
     long_description=open('README.rst').read(),
     keywords='adium',
     author='Shichao An',
@@ -13,7 +13,7 @@ setup(
     url='https://github.com/shichao-an/adiumsh',
     license='BSD',
     install_requires=['configparser', 'argparse', 'psutil'],
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
     include_package_data=True,
     zip_safe=False,
     entry_points={
