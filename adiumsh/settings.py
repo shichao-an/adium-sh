@@ -4,6 +4,8 @@ from .utils import get_config
 
 PACKAGE_PATH = os.path.abspath(os.path.dirname(__file__))
 REPO_PATH = os.path.join(PACKAGE_PATH, os.pardir)
+LOG_PATH = '~/Library/Application Support/Adium 2.0/Users/Default/Logs'
+LOG_PATH = os.path.expanduser(LOG_PATH)
 CONFIG_PATH = os.path.expanduser('~/.adiumsh') \
     if not os.environ.get('ADIUMSH_TEST') \
     else os.path.join(REPO_PATH, '.adiumsh')
