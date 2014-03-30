@@ -41,10 +41,7 @@ class Adium(object):
 
     def send_alias(self, message, alias, account=None, service=None):
         """Send a message to an alias"""
-        if account is None and self.account is not None:
-            account = self.account
-        if service is None and self.service is not None:
-            service = self.service
+        self._set_as()
         name = self.get_name(alias, account, service)
         self.send(message, name)
 
@@ -52,7 +49,7 @@ class Adium(object):
         """Send a message"""
         if name is None and self.buddy is not None:
             name = self.buddy
-        self.call_script('send', [name, message])
+        self._send(message, name)
 
     def call_script(self, suffix, args):
         """
@@ -79,15 +76,22 @@ class Adium(object):
 
     def get_name(self, alias, account=None, service=None):
         """Get account name by alias"""
-        if account is None and self.account is not None:
-            account = self.account
-        if service is None and self.service is not None:
-            service = self.service
+        self._set_as(account, service)
         name = self.call_script('name', [service, account, alias])
         if name:
             return name.rstrip(b'\n')
         else:
             raise ExecutionError('This alias does not exist in your account')
+
+    def _send(self, message, name):
+        self.call_script('send', [name, message])
+
+    def _set_as(self, account, service):
+        """Set account and service if None"""
+        if account is None and self.account is not None:
+            account = self.account
+        if service is None and self.service is not None:
+            service = self.service
 
 
 class DoesNotExist(Exception):
