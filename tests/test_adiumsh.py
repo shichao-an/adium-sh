@@ -58,6 +58,10 @@ class TestAdiumsh(TestCase):
 
 class TestCommands(TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        create_run_script()
+
     def setUp(self):
         self.env = TestFileEnvironment('./test-output')
 
