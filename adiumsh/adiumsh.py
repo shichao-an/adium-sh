@@ -4,9 +4,17 @@ import glob
 import os
 import subprocess
 import time
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 from .utils import is_process_running
 from .settings import PACKAGE_PATH
 from .command import parse_args
+
+ADIUM_EVENT_MESSAGE_RECEIVED = 'MESSAGE_RECEIVED'
+ADIUM_EVENT_MESSAGE_SENT = 'MESSAGE_SENT'
+ADIUM_EVENT_STATUS_AWAY = 'STATUS_AWAY'
+ADIUM_EVENT_STATUS_ONLINE = 'STATUS_ONLINE'
+ADIUM_EVENT_STATUS_OFFLINE = 'STATUS_OFFLINE'
 
 
 class Adium(object):
@@ -83,6 +91,18 @@ class Adium(object):
         else:
             raise ExecutionError('This alias does not exist in your account')
 
+    def receive(self, alias=None, name=None, account=None, service=None,
+                callback=None):
+        """
+        Receive a message
+        :param callback: a callback function to call upon receival
+        """
+        pass
+        # Call start_watchdog() with event_type and callback
+
+    def _receive(self, account, service):
+        pass
+
     def _send(self, message, name):
         self.call_script('send', [name, message])
 
@@ -100,6 +120,54 @@ class DoesNotExist(Exception):
 
 class ExecutionError(Exception):
     pass
+
+
+class AdiumEventHandler(FileSystemEventHandler):
+    """Event handler based on Watchdog for logs"""
+    def __init__(self, callback, event_type):
+        """
+        :param callback: a function to be called for event with `event_type`
+            callback(event)
+        :param event_type: a string representing an Adium event
+        """
+        self.callback = callback
+        self.event_type = event_type
+        super(AdiumEventHandler, self).__init__()
+
+    def parse_event(self, event):
+        """
+        Parse the type and data of the FileSystemEvent event
+
+        The type can be message (sent or received) and status
+
+        Return a AdiumEvent event
+        """
+        pass
+
+    def on_modified(self, event):
+        pass
+        # Call self.parse_event(event)
+        # Generate AdiumEvent event
+        # Call self.callback(event)
+
+
+class AdiumEvent(object):
+    def __init__(self, event_type, time, data):
+        self.event_type = event_type
+        self.time = time
+        self.data = data
+
+
+def start_watchdog(path, event_handler, event_type, callback):
+    observer = Observer()
+    observer.schedule(event_handler, path, recursive=True)
+    observer.start()
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        observer.stop()
+    observer.join()
 
 
 def main():
