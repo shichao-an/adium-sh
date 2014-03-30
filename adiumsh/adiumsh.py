@@ -87,7 +87,7 @@ class Adium(object):
         if name:
             return name.rstrip(b'\n')
         else:
-            raise DoesNotExist('This alias does not exist in your account')
+            raise ExecutionError('This alias does not exist in your account')
 
 
 class DoesNotExist(Exception):
