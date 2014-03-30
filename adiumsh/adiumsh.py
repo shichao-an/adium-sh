@@ -108,9 +108,6 @@ class Adium(object):
     def _send(self, message, name):
         self.call_script('send', [name, message])
 
-    def _set_as(self, account, service):
-        """Set account and service if None"""
-
 
 class DoesNotExist(Exception):
     pass
