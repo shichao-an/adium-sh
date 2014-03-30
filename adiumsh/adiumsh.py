@@ -41,10 +41,6 @@ class Adium(object):
 
     def send_alias(self, message, alias, account=None, service=None):
         """Send a message to an alias"""
-        if account is None and self.account is not None:
-            account = self.account
-        if service is None and self.service is not None:
-            service = self.service
         name = self.get_name(alias, account, service)
         self.send(message, name)
 
