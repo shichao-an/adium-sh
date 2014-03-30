@@ -10,7 +10,7 @@ setup(
     keywords='adium',
     author='Shichao An',
     author_email='shichao.an@nyu.edu',
-    url='https://github.com/shichao-an/adiumsh',
+    url='https://github.com/shichao-an/adium-sh',
     license='BSD',
     install_requires=['argparse', 'psutil'],
     packages=find_packages(exclude=['tests']),
