@@ -2,7 +2,6 @@
 from __future__ import print_function, unicode_literals, absolute_import
 import glob
 import os
-#import shlex
 import subprocess
 import time
 from .utils import is_process_running

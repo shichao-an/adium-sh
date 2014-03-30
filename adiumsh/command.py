@@ -9,7 +9,6 @@ def parse_args():
                                      prog='adiumsh')
     subparsers = parser.add_subparsers()
 
-    # send
     parser_send = subparsers.add_parser('send')
 
     parser_send.add_argument('-m', '--message',
