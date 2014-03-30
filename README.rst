@@ -65,3 +65,4 @@ TODO
 ----
 * Complete Python wrapper API to AppleScript support
 * Exhaustive commands based on the wrapper
+* Message receival support based on log watch
