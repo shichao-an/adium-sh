@@ -1,10 +1,10 @@
-adium-sh
+Adium Shell
 ==========
 
 .. image:: https://pypip.in/v/adium-sh/badge.png
         :target: https://pypi.python.org/pypi/adium-sh
 
-adium-sh is a command-line Python wrapper for Adium.
+Adium Shell (adium-sh) is a command-line Python wrapper for Adium.
 
 Description
 -----------
