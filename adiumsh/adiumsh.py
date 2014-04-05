@@ -6,11 +6,12 @@ import glob
 import os
 import subprocess
 import time
-from watchdog.observers import Observer
+from watchdog.observers.kqueue import KqueueObserver as Observer
 from watchdog.events import FileSystemEventHandler
 from .utils import is_process_running
 from .settings import PACKAGE_PATH, LOG_PATH
 from .command import parse_args
+
 
 ADIUM_EVENT_MESSAGE_RECEIVED = 'MESSAGE_RECEIVED'
 ADIUM_EVENT_MESSAGE_SENT = 'MESSAGE_SENT'
@@ -52,7 +53,7 @@ class Adium(object):
     def send_alias(self, message, alias, account=None, service=None):
         """Send a message to an alias"""
         name = self.get_name(alias, account, service)
-        self.send(message, name)
+        self._send(message, name)
 
     def send(self, message, name=None):
         """Send a message"""
@@ -102,6 +103,11 @@ class Adium(object):
         :param callback: a callback function to call upon receival (default
             to self.message_receive_callback)
         """
+
+        if account is None and self.account is not None:
+            account = self.account
+        if service is None and self.service is not None:
+            service = self.service
         if callback is None:
             callback = self.message_receive_callback
         event_handler = AdiumEventHandler(account, service, callback,
@@ -150,7 +156,7 @@ class AdiumEventHandler(FileSystemEventHandler):
         self.callback = callback
         self.event_type = event_type
         self.adium_event = None
-        self.path = os.path.join(LOG_PATH, service + '.' + account)
+        self.src_path = os.path.join(LOG_PATH, service + '.' + account)
         super(AdiumEventHandler, self).__init__()
 
     def parse_event(self, event):
@@ -158,10 +164,9 @@ class AdiumEventHandler(FileSystemEventHandler):
             self.adium_event = None
             return
         else:
-            f = event.src_path
-            with open(f, 'r'):
+            with open(event.src_path, 'r') as f:
                 soup = BeautifulSoup(f.read())
-                t = soup.find_all()[-1]
+                t = soup.find_all(['message', 'status', 'event'])[-1]
                 if t.name == 'message':
                     data = t.attrs
                     data['text'] = t.text
@@ -181,7 +186,7 @@ class AdiumEventHandler(FileSystemEventHandler):
                     pass
 
     def on_modified(self, event):
-        self.parse_event(self, event)
+        self.parse_event(event)
         if self.adium_event is not None:
             if self.event_type is not None:
                 if self.adium_event.event_type == self.event_type:
@@ -199,7 +204,7 @@ class AdiumEvent(object):
 
 def start_watchdog(event_handler):
     observer = Observer()
-    observer.schedule(event_handler, event_handler.path, recursive=True)
+    observer.schedule(event_handler, event_handler.src_path, recursive=True)
     observer.start()
     try:
         while True:

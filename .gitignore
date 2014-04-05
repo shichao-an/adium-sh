@@ -9,3 +9,4 @@ run.py
 tests/secret.py
 test-output
 .tox
+test_run.py
