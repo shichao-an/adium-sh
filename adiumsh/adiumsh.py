@@ -102,7 +102,11 @@ class Adium(object):
         :param callback: a callback function to call upon receival (default
             to self.message_receive_callback)
         """
-        start_watchdog()
+        if callback is None:
+            callback = self.message_receive_callback
+        event_handler = AdiumEventHandler(account, service, callback,
+                                          ADIUM_EVENT_MESSAGE_RECEIVED)
+        start_watchdog(event_handler)
 
     def _receive(self, account, service):
         pass
@@ -111,7 +115,9 @@ class Adium(object):
         self.call_script('send', [name, message])
 
     def message_receive_callback(self, event):
-        pass
+        data = event.data
+        sender = data['sender']
+        text = data['text']
 
 
 class DoesNotExist(Exception):
@@ -162,12 +168,10 @@ class AdiumEventHandler(FileSystemEventHandler):
                     event_time = dateutil.parser.parse(data['time'])
                     del data['time']
 
-                    # Message sent
                     if t.attrs['sender'] == self.account:
                         self.adium_event = \
                             AdiumEvent(ADIUM_EVENT_MESSAGE_SENT,
                                        event_time, data)
-                    # Message received
                     else:
                         self.adium_event = \
                             AdiumEvent(ADIUM_EVENT_MESSAGE_RECEIVED,
@@ -179,7 +183,11 @@ class AdiumEventHandler(FileSystemEventHandler):
     def on_modified(self, event):
         self.parse_event(self, event)
         if self.adium_event is not None:
-            self.callback(self.adium_event)
+            if self.event_type is not None:
+                if self.adium_event.event_type == self.event_type:
+                    self.callback(self.adium_event)
+            else:
+                self.callback(self.adium_event)
 
 
 class AdiumEvent(object):
