@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals, absolute_import
+from bs4 import BeautifulSoup
+import dateutil.parser
 import glob
 import os
 import subprocess
@@ -7,7 +9,7 @@ import time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from .utils import is_process_running
-from .settings import PACKAGE_PATH
+from .settings import PACKAGE_PATH, LOG_PATH
 from .command import parse_args
 
 ADIUM_EVENT_MESSAGE_RECEIVED = 'MESSAGE_RECEIVED'
@@ -97,16 +99,19 @@ class Adium(object):
                 callback=None):
         """
         Receive a message
-        :param callback: a callback function to call upon receival
+        :param callback: a callback function to call upon receival (default
+            to self.message_receive_callback)
         """
-        pass
-        # Call start_watchdog() with event_type and callback
+        start_watchdog()
 
     def _receive(self, account, service):
         pass
 
     def _send(self, message, name):
         self.call_script('send', [name, message])
+
+    def message_receive_callback(self, event):
+        pass
 
 
 class DoesNotExist(Exception):
@@ -119,43 +124,74 @@ class ExecutionError(Exception):
 
 class AdiumEventHandler(FileSystemEventHandler):
     """Event handler based on Watchdog for logs"""
-    def __init__(self, callback, event_type):
+    patterns = {
+        'status': ('connected', 'disconnected', 'away', 'online'),
+        'message': ('sender'),
+        'event': ('windowClosed'),
+    }
+
+    def __init__(self, account, service, callback, event_type=None):
         """
+        :param account: account name of the current user
+        :param service: service name of the account
         :param callback: a function to be called for event with `event_type`
             callback(event)
-        :param event_type: a string representing an Adium event
+        :param event_type: a string representing an Adium event that callback
+            will be called with; if None, all events will be used
         """
+        self.account = account
+        self.service = service
         self.callback = callback
         self.event_type = event_type
+        self.adium_event = None
+        self.path = os.path.join(LOG_PATH, service + '.' + account)
         super(AdiumEventHandler, self).__init__()
 
     def parse_event(self, event):
-        """
-        Parse the type and data of the FileSystemEvent event
+        if event.is_directory:
+            self.adium_event = None
+            return
+        else:
+            f = event.src_path
+            with open(f, 'r'):
+                soup = BeautifulSoup(f.read())
+                t = soup.find_all()[-1]
+                if t.name == 'message':
+                    data = t.attrs
+                    data['text'] = t.text
+                    event_time = dateutil.parser.parse(data['time'])
+                    del data['time']
 
-        The type can be message (sent or received) and status
+                    # Message sent
+                    if t.attrs['sender'] == self.account:
+                        self.adium_event = \
+                            AdiumEvent(ADIUM_EVENT_MESSAGE_SENT,
+                                       event_time, data)
+                    # Message received
+                    else:
+                        self.adium_event = \
+                            AdiumEvent(ADIUM_EVENT_MESSAGE_RECEIVED,
+                                       event_time, data)
 
-        Return a AdiumEvent event
-        """
-        pass
+                elif t.name == 'status':
+                    pass
 
     def on_modified(self, event):
-        pass
-        # Call self.parse_event(event)
-        # Generate AdiumEvent event
-        # Call self.callback(event)
+        self.parse_event(self, event)
+        if self.adium_event is not None:
+            self.callback(self.adium_event)
 
 
 class AdiumEvent(object):
-    def __init__(self, event_type, time, data):
+    def __init__(self, event_type, event_time, data):
         self.event_type = event_type
-        self.time = time
+        self.event_time = event_time
         self.data = data
 
 
-def start_watchdog(path, event_handler, event_type, callback):
+def start_watchdog(event_handler):
     observer = Observer()
-    observer.schedule(event_handler, path, recursive=True)
+    observer.schedule(event_handler, event_handler.path, recursive=True)
     observer.start()
     try:
         while True:
