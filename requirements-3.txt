@@ -4,4 +4,3 @@ beautifulsoup4
 watchdog
 python-dateutil
 requests
-langid

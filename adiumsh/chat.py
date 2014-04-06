@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals, absolute_import
 import json
-import langid
+try:
+    import langid
+except:
+    pass
 import requests
+import sys
+import warnings
 from .settings import SIMI_KEY
 from .settings import (EVENT_MESSAGE_RECEIVED, EVENT_MESSAGE_SENT,
                        EVENT_STATUS_AWAY, EVENT_STATUS_ONLINE,
@@ -78,8 +83,15 @@ class SimiChat(BaseChat):
         else:
             url = self.paid_url
         text = self.event.data['text']
-        lc = langid.classify(text)[0] if self.language is None\
-            else self.language
+        if 'langid' not in sys.modules:
+            warnings.warn('langid is unavailable', UserWarning)
+            if self.language is None:
+                warnings.warn('Language auto detection is not in effect',
+                        UserWarning)
+            lc = 'en' if self.language is None else self.language
+        else:
+            lc = langid.classify(text)[0] if self.language is None\
+                else self.language
         params = {
             'key': SIMI_KEY,
             'lc': lc,
