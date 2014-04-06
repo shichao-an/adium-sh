@@ -84,7 +84,7 @@ Then, you can invoke the "receive" sub-command with the ``-c/--chat`` arguments:
 
 The patterns are a list of string pairs and each pair is separated with a colon. The string to the left of the colon is the pattern which the received text will be matched against, and the right one is the corresponding reply text. There is also a "type" option in the chat section, which defaults to "wildcard" that has the uses globbing pattern matching. Another value to it is "regex", which uses regular expression.
 
-You can also use the "SimiSimi Chat" which hit the SimiSimi API with the messages received. You have to set the API key in the config file and the key type ("trial", which is default, or "paid")::
+You can also use the "SimSimi Chat" which hit the SimSimi API with the messages received. You have to set the API key in the config file and the key type ("trial", which is default, or "paid")::
 
     [chat-simi]
     simi-key = some-really-long-key
