@@ -124,7 +124,7 @@ class PatternParser(object):
         self.text = text
         r = patterns.strip('\n').split('\n')
         self.patterns = \
-            map(lambda x: map(lambda y: y.strip(), tuple(x.split(':'))), r)
+            map(lambda x: tuple(map(lambda y: y.strip(), x.split(':'))), r)
         self.pattern_type = pattern_type
 
     def parse(self):
