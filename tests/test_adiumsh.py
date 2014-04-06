@@ -69,3 +69,7 @@ class TestCommands(TestCase):
     def test_send_no_args(self):
         cmd = 'python ../run.py send'
         self.env.run(*shlex.split(cmd), expect_error=True)
+
+    def test_send_alias_stdin(self):
+        cmd = 'python ../run.py send -a "%s"' % (TEST_ALIAS)
+        self.env.run(*shlex.split(cmd), stdin='Hi')
