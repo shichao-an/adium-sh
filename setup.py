@@ -1,6 +1,12 @@
 from setuptools import setup, find_packages
 from adiumsh import __version__
+import platform
 
+
+if platform.python_version() < '3':
+    requirements = open('requirements.txt').read().splitlines()
+else:
+    requirements = open('requirements-3.txt').read().splitlines()
 
 setup(
     name='adium-sh',
@@ -12,7 +18,7 @@ setup(
     author_email='shichao.an@nyu.edu',
     url='https://github.com/shichao-an/adium-sh',
     license='BSD',
-    install_requires=['argparse', 'psutil'],
+    install_requires=requirements,
     packages=find_packages(exclude=['tests']),
     include_package_data=True,
     package_data={

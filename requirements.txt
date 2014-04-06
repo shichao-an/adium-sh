@@ -1,3 +1,7 @@
 argparse
 configparser
 psutil==2.0.0
+beautifulsoup4
+langid
+watchdog
+python-dateutil
