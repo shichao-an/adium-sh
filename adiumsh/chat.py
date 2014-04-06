@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals, absolute_import
+from fnmatch import fnmatch
 import json
 try:
     import langid
@@ -8,7 +9,8 @@ except:
 import requests
 import sys
 import warnings
-from .settings import SIMI_KEY
+from .settings import (DEFAULT_CHAT, SIMI_KEY, CHAT_PATTERNS,
+                       CHAT_PATTERN_TYPES)
 from .settings import (EVENT_MESSAGE_RECEIVED, EVENT_MESSAGE_SENT,
                        EVENT_STATUS_AWAY, EVENT_STATUS_ONLINE,
                        EVENT_STATUS_OFFLINE, EVENT_STATUS_CONNECTED,
@@ -30,7 +32,8 @@ class BaseChat(object):
 
     def reply(self):
         text = self.response()
-        self.adium.send(text, self.event.sender)
+        if text:
+            self.adium.send(text, self.event.sender)
         if hasattr(self, 'active_chat'):
             self.chat()
 
@@ -43,15 +46,19 @@ class BaseChat(object):
         raise NotImplementedError
 
 
-class SimpleChat(object):
+class SimpleChat(BaseChat):
     """
     Simple Chat API
     """
-    def __init__(self):
-        super(SimiChat, self).__init__()
+    def __init__(self, adium, event, event_types=[EVENT_MESSAGE_RECEIVED]):
+        super(SimpleChat, self).__init__(adium, event, event_types)
 
     def response(self):
-        pass
+        if (self.event.event_type == EVENT_MESSAGE_RECEIVED
+                and EVENT_MESSAGE_RECEIVED in self.event_types):
+            text = self.event.data['text']
+            parser = PatternParser(text, CHAT_PATTERNS, CHAT_PATTERN_TYPES)
+            return parser.parse()
 
 
 class ActiveChatMixin(object):
@@ -101,3 +108,35 @@ class SimiChat(BaseChat):
         d = json.loads(r.text)
         print(d)
         return d['response']
+
+
+class PatternParser(object):
+    """
+    PatternParser: parse user-defined patterns for Chat instances
+    """
+    def __init__(self, text, patterns, pattern_type='wildcard'):
+        """
+        :param text: a string of text to parse
+        :param patterns: a raw pattern string from the config file
+        :param pattern_type: 'wildcard' or 'regex'
+        """
+        self.text = text
+        r = patterns.strip('\n').split('\n')
+        self.patterns = \
+            map(lambda x: map(lambda y: y.strip(), tuple(x.split(':'))), r)
+        self.pattern_type = pattern_type
+
+    def parse(self):
+        if self.pattern_type == 'wildcard':
+            return self.parse_wildcard()
+        elif self.pattern_type == 'regex':
+            return self.parse_regex()
+
+    def parse_wildcard(self):
+        for pattern in self.patterns:
+            if fnmatch(self.text, pattern[0]):
+                return pattern[1]
+        return None
+
+    def parse_regex(self):
+        pass

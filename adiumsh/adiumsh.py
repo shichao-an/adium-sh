@@ -15,7 +15,7 @@ from .settings import (EVENT_MESSAGE_RECEIVED, EVENT_MESSAGE_SENT,
                        EVENT_STATUS_OFFLINE, EVENT_STATUS_CONNECTED,
                        EVENT_STATUS_DISCONNECTED)
 from .command import parse_args
-from .chat import SimiChat
+from .chat import SimpleChat
 
 
 class Adium(object):
@@ -124,7 +124,7 @@ class Adium(object):
         print(event.sender)
         print(event.sender_alias)
         print(data['text'])
-        chat = SimiChat(self, event)
+        chat = SimpleChat(self, event)
         chat.reply()
 
 
