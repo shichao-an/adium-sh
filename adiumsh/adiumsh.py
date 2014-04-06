@@ -253,14 +253,20 @@ def start_watchdog(event_handler):
 
 def main():
     args = parse_args()
-    print(args)
+    #print(args)
     adium = Adium(account=args.account,
                   service=args.service)
-    if args.command == 'send':
-        adium.buddy = args.buddy
-        if args.buddy:
-            adium.send(args.message, args.buddy)
-        else:
-            adium.send_alias(args.message, args.alias)
-    elif args.command == 'receive':
-        adium.receive()
+    command = 'do_' + args.command
+    globals()[command](adium, args=args)
+
+
+def do_send(adium, args):
+    adium.buddy = args.buddy
+    if args.buddy:
+        adium.send(args.message, args.buddy)
+    else:
+        adium.send_alias(args.message, args.alias)
+
+
+def do_receive(adium, args):
+    adium.receive()
