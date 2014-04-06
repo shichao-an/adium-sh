@@ -65,13 +65,14 @@ You can also pass as argument your message:
 
 Receive messages
 ~~~~~~~~~~~~~~~~
-You must specify chat method to receive messages. By default, adium-sh use the "Simple Chat", which basically reply to received message according to the patterns you set. You must set the patterns in the config file, possibly like the following settings::
+You must specify a chat method to receive messages. By default, adium-sh use the "Simple Chat", which basically replies to received message according to the patterns you set. You must set the patterns in the config file, possibly like the following settings::
 
     [default]
     service = GTalk
     account = yourname@gmail.com
 
     [chat-default]
+    type = wildcard
     patterns = 
         *hello*: hi
         *what*: sorry	
@@ -80,6 +81,8 @@ You must specify chat method to receive messages. By default, adium-sh use the "
 Then, you can invoke the "receive" sub-command with the ``-c/--chat`` arguments::
 
     $ adiumsh receive -c default 
+
+The patterns are a list of string pairs and each pair is separated with a colon. The string to the left of the colon is the pattern which the received text will be matched against, and the right one is the corresponding reply text. There is also a "type" option in the chat section, which defaults to "wildcard" that has the uses globbing pattern matching. Another value to it is "regex", which uses regular expression.
 
 You can also use the "SimiSimi Chat" which hit the SimiSimi API with the messages received. You have to set the API key in the config file::
 

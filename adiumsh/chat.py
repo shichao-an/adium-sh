@@ -140,4 +140,5 @@ class PatternParser(object):
         return None
 
     def parse_regex(self):
+        # TODO
         pass
