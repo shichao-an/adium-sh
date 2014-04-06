@@ -8,7 +8,7 @@ import subprocess
 import time
 from watchdog.observers.kqueue import KqueueObserver as Observer
 from watchdog.events import FileSystemEventHandler
-from .utils import is_process_running
+from .utils import is_process_running, unescape
 from .settings import PACKAGE_PATH, LOG_PATH
 from .settings import (EVENT_MESSAGE_RECEIVED, EVENT_MESSAGE_SENT,
                        EVENT_STATUS_AWAY, EVENT_STATUS_ONLINE,
@@ -187,7 +187,7 @@ class AdiumEventHandler(FileSystemEventHandler):
                 sender_alias = t.attrs['alias']
                 data = {}
                 if t.name == 'message':
-                    data['text'] = t.text
+                    data['text'] = unescape(t.text)
                     if sender == self.account:
                         event_type = EVENT_MESSAGE_SENT
                         return self.emit_event(event_type, event_time, sender,

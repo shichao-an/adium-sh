@@ -4,6 +4,7 @@ try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
+from xml.sax import saxutils
 
 
 def is_process_running(process_name):
@@ -25,3 +26,8 @@ def get_config(path, section):
         config.read(path)
         if config.has_section(section):
             return dict(config.items(section))
+
+
+def unescape(text):
+    entities = {"&apos;": "'", "&quot;": '"'}
+    return saxutils.unescape(text, entities)
