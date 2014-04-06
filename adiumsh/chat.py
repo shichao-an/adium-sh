@@ -87,7 +87,7 @@ class SimiChat(BaseChat):
             warnings.warn('langid is unavailable', UserWarning)
             if self.language is None:
                 warnings.warn('Language auto detection is not in effect',
-                        UserWarning)
+                              UserWarning)
             lc = 'en' if self.language is None else self.language
         else:
             lc = langid.classify(text)[0] if self.language is None\
