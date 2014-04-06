@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import argparse
 import sys
-from .settings import (DEFAULT_SERVICE, DEFAULT_ACCOUNT, DEFAULT_BUDDY)
+from .settings import (DEFAULT_SERVICE, DEFAULT_ACCOUNT, DEFAULT_BUDDY,
+                       DEFAULT_CHAT, CONFIG_PATH)
+from .utils import get_config
 
 
 def parse_args():
@@ -23,6 +25,8 @@ def parse_args():
     send_buddy_group.add_argument('-a', '--alias',
                                   help='alias of the target account')
     parser_receive = subparsers.add_parser('receive')
+    parser_receive.add_argument('-c', '--chat',
+                                help='chat method to use')
     args = parser.parse_args()
     args.service = args.service or DEFAULT_SERVICE
     args.account = args.account or DEFAULT_ACCOUNT
@@ -35,7 +39,7 @@ def parse_args():
         parse_send(parser_send, args)
     # `receive` subcommand
     elif args.command == 'receive':
-        parse_receive(parser, args)
+        parse_receive(parser_receive, args)
     return args
 
 
@@ -59,4 +63,21 @@ def parse_send(parser, args):
 
 
 def parse_receive(parser, args):
-    pass
+    args.chat = args.chat or DEFAULT_CHAT
+    if not args.chat:
+        msg = 'Must specify default chat'
+        parser.error(msg)
+    else:
+        chat = args.chat
+        chat_config = get_config(CONFIG_PATH, 'chat-' + chat)
+        if chat_config is None:
+            msg = 'Chat "%s" does not exist in the config file' % chat
+            parser.error(msg)
+        if chat == 'simi':
+            if not chat_config.get('simi-key'):
+                msg = 'Must set simi key in the config file'
+                parser.error(msg)
+        else:
+            if not chat_config.get('patterns'):
+                msg = 'Must set chat patterns in the config file'
+                parser.error(msg)

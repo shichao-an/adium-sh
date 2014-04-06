@@ -15,8 +15,10 @@ Feature
 
 The current features are:
 
+* Set default service and account
 * Send messages using exact account name or alias
-* Set default service and account for alias
+* Receive and reply messages using patterns or external API (SimiSimi currently supported)
+* React to events
 
 Installation
 ------------
@@ -26,21 +28,21 @@ Installation
 
 Usage
 -----
+You must specify the account and service to associate with the current use, either as command-line arguments or in the config file. When specify them as arguments, you must put the before the sub-commands.
 
-
-Examples
-~~~~~~~~
+Send messages
+~~~~~~~~~~~~~
 Send a message using account name:
 ::
 
-    $ adiumsh send -b buddy@gmail.com
+    $ adiumsh -s GTalk -t yourname@gmail send -b buddy@gmail.com
     Hello, there
     <<EOF
 
 Send a message using alias:
 ::
 
-    $ adiumsh send -a 'John Smith' -s GTalk -t yourname@gmail.com
+    $ adiumsh -s GTalk -t yourname@gmail.com send -a 'John Smith'
     Hello, there
     <<EOF
 
@@ -51,7 +53,7 @@ Set default configuration file at ``~/.adiumsh``:
     service = GTalk
     account = yourname@gmail.com
 
-And you can send to alias without specifying ``-s/--service`` and ``-t/--account``:
+And you can send messages without specifying ``-s/--service`` and ``-t/--account``:
 ::
 
     $ adiumsh send -a 'John Smith'
@@ -61,8 +63,30 @@ You can also pass as argument your message:
 
     $ adiumsh send -a 'John Smith' -m 'Hello, there'
 
+Receive messages
+~~~~~~~~~~~~~~~~
+You must specify chat method to receive messages. By default, adium-sh use the "Simple Chat", which basically reply to received message according to the patterns you set. You must set the patterns in the config file, possibly like the following settings::
+
+    [default]
+    service = GTalk
+    account = yourname@gmail.com
+
+    [chat-default]
+    patterns = 
+        *hello*: hi
+        *what*: sorry	
+        *: I'm not available now
+
+Then, you can invoke the "receive" sub-command with the ``-c/--chat`` arguments::
+
+    $ adiumsh receive -c default 
+
+You can also use the "SimiSimi Chat" which hit the SimiSimi API with the messages received. You have to set the API key in the config file::
+
+    [chat-simi]
+    simi-key = some-really-long-key
+
 TODO
 ----
 * Complete Python wrapper API to AppleScript support
 * Exhaustive commands based on the wrapper
-* Message receival support based on log watch

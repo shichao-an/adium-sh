@@ -28,6 +28,11 @@ def get_config(path, section):
             return dict(config.items(section))
 
 
+def get_config_value(path, section, name):
+    config = get_config(path, section)
+    return config.get(name, None)
+
+
 def unescape(text):
     entities = {"&apos;": "'", "&quot;": '"'}
     return saxutils.unescape(text, entities)

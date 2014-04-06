@@ -21,18 +21,6 @@ DEFAULT_BUDDY = \
 DEFAULT_CHAT = \
     default_config.get('chat', None) if default_config else None
 
-chat_config = get_config(CONFIG_PATH, 'chat-' + DEFAULT_CHAT)
-SIMI_KEY = None
-CHAT_PATTERN_TYPES = None
-CHAT_PATTERNS = None
-if DEFAULT_CHAT == 'simi':
-    SIMI_KEY = chat_config.get('simi-key', None) if chat_config else None
-else:
-    CHAT_PATTERN_TYPES = \
-        chat_config.get('type', 'wildcard') if chat_config else None
-    CHAT_PATTERNS = \
-        chat_config.get('patterns', None) if chat_config else None
-
 
 EVENT_MESSAGE_RECEIVED = 'MESSAGE_RECEIVED'
 EVENT_MESSAGE_SENT = 'MESSAGE_SENT'

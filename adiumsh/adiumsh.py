@@ -8,14 +8,14 @@ import subprocess
 import time
 from watchdog.observers.kqueue import KqueueObserver as Observer
 from watchdog.events import FileSystemEventHandler
-from .utils import is_process_running, unescape
-from .settings import PACKAGE_PATH, LOG_PATH
+from .utils import is_process_running, unescape, get_config
+from .settings import PACKAGE_PATH, LOG_PATH, CONFIG_PATH
 from .settings import (EVENT_MESSAGE_RECEIVED, EVENT_MESSAGE_SENT,
                        EVENT_STATUS_AWAY, EVENT_STATUS_ONLINE,
                        EVENT_STATUS_OFFLINE, EVENT_STATUS_CONNECTED,
                        EVENT_STATUS_DISCONNECTED)
 from .command import parse_args
-from .chat import SimpleChat
+from .chat import SimpleChat, SimiChat
 
 
 class Adium(object):
@@ -23,11 +23,12 @@ class Adium(object):
     script_ext = r'.scpt'
     open_cmd = ['open', '-a', 'Adium']
 
-    def __init__(self, account, service, buddy=None):
+    def __init__(self, account, service, buddy=None, chat=None):
         """
         :param account: account to use
         :param service: service of the account
         :param buddy: account name of the target user to chat with
+        :param chat: a Chat instance
         """
         if not self.is_running:
             self.start()
@@ -119,13 +120,16 @@ class Adium(object):
         return self.call_script('name', [self.service, self.account, alias])
 
     def receive_callback(self, event):
-        """Default message receive callback"""
+        """
+        Default message receive callback
+        :param event: incoming event
+        """
         data = event.data
         print(event.sender)
         print(event.sender_alias)
         print(data['text'])
-        chat = SimpleChat(self, event)
-        chat.reply()
+        self.chat.event = event
+        self.chat.reply()
 
 
 class DoesNotExist(Exception):
@@ -269,4 +273,16 @@ def do_send(adium, args):
 
 
 def do_receive(adium, args):
+    chat_config = get_config(CONFIG_PATH, 'chat-' + args.chat)
+    if args.chat == 'simi':
+        key = chat_config.get('simi-key', None) if chat_config else None
+        key_type = \
+            chat_config.get('simi-key-type', None) if chat_config else None
+        adium.chat = SimiChat(adium, key, key_type)
+    else:
+        pattern_type = \
+            chat_config.get('type', 'wildcard') if chat_config else None
+        patterns = \
+            chat_config.get('patterns', None) if chat_config else None
+        adium.chat = SimpleChat(adium, patterns, pattern_type)
     adium.receive()

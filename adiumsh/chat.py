@@ -9,8 +9,6 @@ except:
 import requests
 import sys
 import warnings
-from .settings import (DEFAULT_CHAT, SIMI_KEY, CHAT_PATTERNS,
-                       CHAT_PATTERN_TYPES)
 from .settings import (EVENT_MESSAGE_RECEIVED, EVENT_MESSAGE_SENT,
                        EVENT_STATUS_AWAY, EVENT_STATUS_ONLINE,
                        EVENT_STATUS_OFFLINE, EVENT_STATUS_CONNECTED,
@@ -18,7 +16,7 @@ from .settings import (EVENT_MESSAGE_RECEIVED, EVENT_MESSAGE_SENT,
 
 
 class BaseChat(object):
-    def __init__(self, adium, event, event_types=[EVENT_MESSAGE_RECEIVED]):
+    def __init__(self, adium, event_types=[EVENT_MESSAGE_RECEIVED]):
         """
         A Chat instance represents a single chat, consists of a `reply` method
         :param adium: an Adium instance
@@ -27,7 +25,6 @@ class BaseChat(object):
             reply
         """
         self.adium = adium
-        self.event = event
         self.event_types = event_types
 
     def reply(self):
@@ -50,14 +47,17 @@ class SimpleChat(BaseChat):
     """
     Simple Chat API
     """
-    def __init__(self, adium, event, event_types=[EVENT_MESSAGE_RECEIVED]):
-        super(SimpleChat, self).__init__(adium, event, event_types)
+    def __init__(self, adium, patterns, pattern_type,
+                 event_types=[EVENT_MESSAGE_RECEIVED]):
+        self.patterns = patterns
+        self.pattern_type = pattern_type
+        super(SimpleChat, self).__init__(adium, event_types)
 
     def response(self):
         if (self.event.event_type == EVENT_MESSAGE_RECEIVED
                 and EVENT_MESSAGE_RECEIVED in self.event_types):
             text = self.event.data['text']
-            parser = PatternParser(text, CHAT_PATTERNS, CHAT_PATTERN_TYPES)
+            parser = PatternParser(text, self.patterns, self.pattern_type)
             return parser.parse()
 
 
@@ -78,11 +78,12 @@ class SimiChat(BaseChat):
     trial_url = 'http://sandbox.api.simsimi.com/request.p'
     paid_url = 'http://api.simsimi.com/request.p'
 
-    def __init__(self, adium, event, event_types=[EVENT_MESSAGE_RECEIVED],
-                 language=None, trial=True):
+    def __init__(self, adium, key, event_types=[EVENT_MESSAGE_RECEIVED],
+                 language=None, key_type='trial'):
+        self.key = key
         self.language = language
-        self.trial = trial
-        super(SimiChat, self).__init__(adium, event, event_types)
+        self.trial = True if key_type == 'trial' else False
+        super(SimiChat, self).__init__(adium, event_types)
 
     def response(self):
         if self.trial:
@@ -100,7 +101,7 @@ class SimiChat(BaseChat):
             lc = langid.classify(text)[0] if self.language is None\
                 else self.language
         params = {
-            'key': SIMI_KEY,
+            'key': self.key,
             'lc': lc,
             'text': text,
         }
