@@ -164,7 +164,7 @@ class AdiumEventHandler(FileSystemEventHandler):
         self.service = service
         self.callback = callback
         self.event_type = event_type
-        self.sender = sender
+        self.sender = sender  # TODO: change to senders (list of sender)
         self.adium_event = None
         self.src_path = os.path.join(LOG_PATH, service + '.' + account)
         super(AdiumEventHandler, self).__init__()
