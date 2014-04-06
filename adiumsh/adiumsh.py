@@ -13,11 +13,13 @@ from .settings import PACKAGE_PATH, LOG_PATH
 from .command import parse_args
 
 
-ADIUM_EVENT_MESSAGE_RECEIVED = 'MESSAGE_RECEIVED'
-ADIUM_EVENT_MESSAGE_SENT = 'MESSAGE_SENT'
-ADIUM_EVENT_STATUS_AWAY = 'STATUS_AWAY'
-ADIUM_EVENT_STATUS_ONLINE = 'STATUS_ONLINE'
-ADIUM_EVENT_STATUS_OFFLINE = 'STATUS_OFFLINE'
+EVENT_MESSAGE_RECEIVED = 'MESSAGE_RECEIVED'
+EVENT_MESSAGE_SENT = 'MESSAGE_SENT'
+EVENT_STATUS_AWAY = 'STATUS_AWAY'
+EVENT_STATUS_ONLINE = 'STATUS_ONLINE'
+EVENT_STATUS_OFFLINE = 'STATUS_OFFLINE'
+EVENT_STATUS_CONNECTED = 'STATUS_CONNECTED'
+EVENT_STATUS_DISCONNECTED = 'STATUS_DISCONNECTED'
 
 
 class Adium(object):
@@ -101,7 +103,7 @@ class Adium(object):
         """
         Receive a message
         :param callback: a callback function to call upon receival (default
-            to self.message_receive_callback)
+            to self.receive_callback)
         """
 
         if account is None and self.account is not None:
@@ -109,21 +111,31 @@ class Adium(object):
         if service is None and self.service is not None:
             service = self.service
         if callback is None:
-            callback = self.message_receive_callback
-        event_handler = AdiumEventHandler(account, service, callback,
-                                          ADIUM_EVENT_MESSAGE_RECEIVED)
-        start_watchdog(event_handler)
+            callback = self.receive_callback
+        sender = None
+        if name is not None:
+            sender = name
+        elif alias is not None:
+            sender = self.get_name(alias, account, service)
+        self._receive(account, service, callback, sender)
 
-    def _receive(self, account, service):
-        pass
+    def _receive(self, account, service, callback, sender=None):
+        event_handler = AdiumEventHandler(account, service, callback,
+                                          EVENT_MESSAGE_RECEIVED,
+                                          sender)
+
+        start_watchdog(event_handler)
 
     def _send(self, message, name):
         self.call_script('send', [name, message])
 
-    def message_receive_callback(self, event):
+    def receive_callback(self, event):
+        """Default message receive callback"""
         data = event.data
         sender = data['sender']
+        print(sender)
         text = data['text']
+        print(text)
 
 
 class DoesNotExist(Exception):
@@ -142,7 +154,8 @@ class AdiumEventHandler(FileSystemEventHandler):
         'event': ('windowClosed'),
     }
 
-    def __init__(self, account, service, callback, event_type=None):
+    def __init__(self, account, service, callback,
+                 event_type=None, sender=None):
         """
         :param account: account name of the current user
         :param service: service name of the account
@@ -150,44 +163,77 @@ class AdiumEventHandler(FileSystemEventHandler):
             callback(event)
         :param event_type: a string representing an Adium event that callback
             will be called with; if None, all events will be used
+        :param sender: the sender of the event; defaults to None, which is
+            anyone
         """
         self.account = account
         self.service = service
         self.callback = callback
         self.event_type = event_type
+        self.sender = sender
         self.adium_event = None
         self.src_path = os.path.join(LOG_PATH, service + '.' + account)
         super(AdiumEventHandler, self).__init__()
 
     def parse_event(self, event):
+        """
+        Parse the Watchdog event into Adium event and save to self.adium_event
+
+        Return True if new event is emitted; False if no event
+        """
         if event.is_directory:
             self.adium_event = None
-            return
+            return False
         else:
             with open(event.src_path, 'r') as f:
                 soup = BeautifulSoup(f.read())
                 t = soup.find_all(['message', 'status', 'event'])[-1]
-                if t.name == 'message':
-                    data = t.attrs
-                    data['text'] = t.text
-                    event_time = dateutil.parser.parse(data['time'])
-                    del data['time']
-
-                    if t.attrs['sender'] == self.account:
-                        self.adium_event = \
-                            AdiumEvent(ADIUM_EVENT_MESSAGE_SENT,
-                                       event_time, data)
+                event_time = dateutil.parser.parse(t.attrs['time'])
+                sender = t.attrs['sender']
+                if self.sender is not None:
+                    if self.sender != sender:
+                        self.adium_event = None
+                        return False
+                sender_alias = t.attrs['alias']
+                data = {}
+                data['text'] = t.attrs['text']
+                event_type = None  # Event types to be parsed
+                assert t.name == 'message'
+                if t.name == u'message':
+                    print('1')
+                    if sender == self.account:
+                        event_type = EVENT_MESSAGE_SENT
+                        return self.emit_event(event_type, event_time, sender,
+                                               sender_alias, data)
                     else:
-                        self.adium_event = \
-                            AdiumEvent(ADIUM_EVENT_MESSAGE_RECEIVED,
-                                       event_time, data)
-
+                        event_type = EVENT_MESSAGE_RECEIVED
+                        return self.emit_event(event_type, event_time, sender,
+                                               sender_alias, data)
                 elif t.name == 'status':
+                    if t.attrs['type'] == 'away':
+                        event_type = EVENT_STATUS_AWAY
+                    elif t.attrs['type'] == 'online':
+                        event_type = EVENT_STATUS_ONLINE
+                    elif t.attrs['type'] == 'offline':
+                        event_type = EVENT_STATUS_OFFLINE
+                    elif t.attrs['type'] == 'connected':
+                        event_type = EVENT_STATUS_CONNECTED
+                    elif t.attrs['type'] == 'disconnected':
+                        event_type = EVENT_STATUS_DISCONNECTED
+                elif t.name == 'event':
+                    # TODO: read more logs to understand event tags
                     pass
+                return self.emit_event(event_type, event_time, sender,
+                                       sender_alias)
+
+    def emit_event(self, event_type, event_time,
+                   sender, sender_alias, data=None):
+        self.adium_event = AdiumEvent(
+            event_type, event_time, sender, sender_alias, data)
+        return True
 
     def on_modified(self, event):
-        self.parse_event(event)
-        if self.adium_event is not None:
+        if self.parse_event(event):
             if self.event_type is not None:
                 if self.adium_event.event_type == self.event_type:
                     self.callback(self.adium_event)
@@ -196,9 +242,11 @@ class AdiumEventHandler(FileSystemEventHandler):
 
 
 class AdiumEvent(object):
-    def __init__(self, event_type, event_time, data):
+    def __init__(self, event_type, event_time, sender, sender_alias, data):
         self.event_type = event_type
         self.event_time = event_time
+        self.sender = sender
+        self.sender_alias = sender_alias
         self.data = data
 
 
@@ -211,6 +259,8 @@ def start_watchdog(event_handler):
             time.sleep(1)
     except KeyboardInterrupt:
         observer.stop()
+    except Exception:
+        raise
     observer.join()
 
 

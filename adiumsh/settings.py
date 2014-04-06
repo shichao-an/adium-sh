@@ -17,3 +17,6 @@ DEFAULT_SERVICE = \
     default_config.get('service', None) if default_config else None
 DEFAULT_BUDDY = \
     default_config.get('buddy', None) if default_config else None
+
+SIMI_KEY = \
+    default_config.get('simi_key', None) if default_config else None
