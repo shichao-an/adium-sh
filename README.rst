@@ -86,6 +86,31 @@ You can also use the "SimiSimi Chat" which hit the SimiSimi API with the message
     [chat-simi]
     simi-key = some-really-long-key
 
+Then, invoke this chat from command line::
+
+    $ adiumsh receive -c simi
+
+To set the default chat in the default settings::
+
+    [default]
+    service = GTalk
+    account = yourname@gmail.com
+    chat = default
+
+    [chat-default]
+    patterns = 
+        *hello*: hi
+        *what*: sorry	
+        *: I'm not available now
+
+    [chat-another]
+    patterns =
+        *: not here
+
+Now you can also switch between chats from the command line other than the default::
+
+    $ adiumsh receive -c another
+
 TODO
 ----
 * Complete Python wrapper API to AppleScript support
