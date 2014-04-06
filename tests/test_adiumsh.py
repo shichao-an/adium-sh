@@ -36,6 +36,7 @@ class TestAdiumsh(TestCase):
         time.sleep(1)
         cls.adium = adiumsh.Adium(account=TEST_ACCOUNT,
                                   service=TEST_SERVICE)
+        time.sleep(1)
 
     def test_send_alias(self):
         self.adium.send_alias('Hi', TEST_ALIAS)

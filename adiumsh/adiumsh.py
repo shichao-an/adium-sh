@@ -23,11 +23,11 @@ class Adium(object):
     script_ext = r'.scpt'
     open_cmd = ['open', '-a', 'Adium']
 
-    def __init__(self, buddy=None, account=None, service=None):
+    def __init__(self, account, service, buddy=None):
         """
+        :param account: account to use
+        :param service: service of the account
         :param buddy: account name of the target user to chat with
-        :param account: default account to use
-        :param service: default service of the account
         """
         if not self.is_running:
             self.start()
@@ -48,9 +48,9 @@ class Adium(object):
         """Start the application"""
         subprocess.Popen(self.open_cmd)
 
-    def send_alias(self, message, alias, account=None, service=None):
+    def send_alias(self, message, alias):
         """Send a message to an alias"""
-        name = self.get_name(alias, account, service)
+        name = self.get_name(alias)
         self._send(message, name)
 
     def send(self, message, name=None):
@@ -82,48 +82,41 @@ class Adium(object):
         else:
             raise DoesNotExist(script + ' does not exist')
 
-    def get_name(self, alias, account=None, service=None):
-        """Get account name by alias"""
-        if account is None and self.account is not None:
-            account = self.account
-        if service is None and self.service is not None:
-            service = self.service
-        name = self.call_script('name', [service, account, alias])
+    def get_name(self, alias):
+        """Get (target) account name by alias"""
+        name = self._name(alias)
         if name:
             return name.rstrip(b'\n')
         else:
             raise ExecutionError('This alias does not exist in your account')
 
-    def receive(self, alias=None, name=None, account=None, service=None,
-                callback=None):
+    def receive(self, alias=None, name=None, callback=None):
         """
         Receive a message
         :param callback: a callback function to call upon receival (default
             to self.receive_callback)
         """
-
-        if account is None and self.account is not None:
-            account = self.account
-        if service is None and self.service is not None:
-            service = self.service
         if callback is None:
             callback = self.receive_callback
         sender = None
         if name is not None:
             sender = name
         elif alias is not None:
-            sender = self.get_name(alias, account, service)
-        self._receive(account, service, callback, sender)
+            sender = self.get_name(alias)
+        self._receive(callback, sender)
 
-    def _receive(self, account, service, callback, sender=None):
-        event_handler = AdiumEventHandler(account, service, callback,
+    def _receive(self, callback, sender=None):
+        event_handler = AdiumEventHandler(self.account, self.service, callback,
                                           EVENT_MESSAGE_RECEIVED,
                                           sender)
 
         start_watchdog(event_handler)
 
     def _send(self, message, name):
-        self.call_script('send', [name, message])
+        self.call_script('send', [message, name, self.account, self.service])
+
+    def _name(self, alias):
+        return self.call_script('name', [self.service, self.account, alias])
 
     def receive_callback(self, event):
         """Default message receive callback"""
