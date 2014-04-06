@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function, unicode_literals, absolute_import
 from bs4 import BeautifulSoup
-import dateutil
+from dateutil.parser import parse as dateparse
 import glob
 import os
 import subprocess
@@ -185,7 +185,7 @@ class AdiumEventHandler(FileSystemEventHandler):
             with open(event.src_path) as f:
                 soup = BeautifulSoup(f.read())
                 t = soup.find_all(['message', 'status', 'event'])[-1]
-                event_time = dateutil.parser.parse(t.attrs['time'])
+                event_time = dateparse(t.attrs['time'])
                 sender = t.attrs['sender']
                 if self.sender is not None:
                     if self.sender != sender:
