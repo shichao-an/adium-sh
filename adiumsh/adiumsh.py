@@ -132,10 +132,9 @@ class Adium(object):
     def receive_callback(self, event):
         """Default message receive callback"""
         data = event.data
-        sender = data['sender']
+        sender = event.sender 
         print(sender)
-        text = data['text']
-        print(text)
+        print(data['text'])
 
 
 class DoesNotExist(Exception):
@@ -185,7 +184,7 @@ class AdiumEventHandler(FileSystemEventHandler):
             self.adium_event = None
             return False
         else:
-            with open(event.src_path, 'r') as f:
+            with open(event.src_path) as f:
                 soup = BeautifulSoup(f.read())
                 t = soup.find_all(['message', 'status', 'event'])[-1]
                 event_time = dateutil.parser.parse(t.attrs['time'])
@@ -196,11 +195,8 @@ class AdiumEventHandler(FileSystemEventHandler):
                         return False
                 sender_alias = t.attrs['alias']
                 data = {}
-                data['text'] = t.attrs['text']
-                event_type = None  # Event types to be parsed
-                assert t.name == 'message'
-                if t.name == u'message':
-                    print('1')
+                if t.name == 'message':
+                    data['text'] = t.text
                     if sender == self.account:
                         event_type = EVENT_MESSAGE_SENT
                         return self.emit_event(event_type, event_time, sender,
