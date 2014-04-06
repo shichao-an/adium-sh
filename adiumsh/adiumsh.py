@@ -10,16 +10,12 @@ from watchdog.observers.kqueue import KqueueObserver as Observer
 from watchdog.events import FileSystemEventHandler
 from .utils import is_process_running
 from .settings import PACKAGE_PATH, LOG_PATH
+from .settings import (EVENT_MESSAGE_RECEIVED, EVENT_MESSAGE_SENT,
+                       EVENT_STATUS_AWAY, EVENT_STATUS_ONLINE,
+                       EVENT_STATUS_OFFLINE, EVENT_STATUS_CONNECTED,
+                       EVENT_STATUS_DISCONNECTED)
 from .command import parse_args
-
-
-EVENT_MESSAGE_RECEIVED = 'MESSAGE_RECEIVED'
-EVENT_MESSAGE_SENT = 'MESSAGE_SENT'
-EVENT_STATUS_AWAY = 'STATUS_AWAY'
-EVENT_STATUS_ONLINE = 'STATUS_ONLINE'
-EVENT_STATUS_OFFLINE = 'STATUS_OFFLINE'
-EVENT_STATUS_CONNECTED = 'STATUS_CONNECTED'
-EVENT_STATUS_DISCONNECTED = 'STATUS_DISCONNECTED'
+from .chat import SimiChat
 
 
 class Adium(object):
@@ -132,9 +128,11 @@ class Adium(object):
     def receive_callback(self, event):
         """Default message receive callback"""
         data = event.data
-        sender = event.sender 
-        print(sender)
+        print(event.sender)
+        print(event.sender_alias)
         print(data['text'])
+        chat = SimiChat(self, event)
+        chat.reply()
 
 
 class DoesNotExist(Exception):
