@@ -24,17 +24,15 @@ def parse_args():
     send_buddy_group.add_argument('-a', '--alias',
                                   help='alias of the target account')
     args = parser.parse_args()
+    args.service = args.service or DEFAULT_SERVICE
+    args.account = args.account or DEFAULT_ACCOUNT
+    if not args.service or not args.account:
+        msg = 'Must specify service and account'
+        raise parser.error(msg)
     if not args.buddy and not args.alias:
         args.buddy = args.buddy or DEFAULT_BUDDY
         if not args.buddy:
             msg = 'Must specify either buddy or alias'
-            raise parser.error(msg)
-
-    if args.alias and not args.buddy:
-        args.service = args.service or DEFAULT_SERVICE
-        args.account = args.account or DEFAULT_ACCOUNT
-        if not args.service or not args.account:
-            msg = 'Must specify service and account when using alias'
             raise parser.error(msg)
     if not args.message:
         message = sys.stdin.read()
