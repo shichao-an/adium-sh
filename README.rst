@@ -17,7 +17,7 @@ The current features are:
 
 * Set default service and account
 * Send messages using exact account name or alias
-* Receive and reply messages using patterns or external API (SimiSimi currently supported)
+* Receive and reply to messages using patterns or external API (SimSimi currently supported)
 * React to events
 
 Installation
