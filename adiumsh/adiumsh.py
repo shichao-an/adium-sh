@@ -125,11 +125,21 @@ class Adium(object):
         :param event: incoming event
         """
         data = event.data
-        print(event.sender)
-        print(event.sender_alias)
-        print(data['text'])
+        self.print_event_message(event, data, 'text')
         self.chat.event = event
         self.chat.reply()
+
+    def print_event_message(self, event, data=None, *args):
+        """
+        :param *args: keys as string to print from data
+        """
+        print('Sender:', event.sender)
+        print('Alias:', event.sender_alias)
+        print('Time:', event.event_time.strftime('%c'))
+        if data is not None:
+            for arg in args:
+                if arg in data:
+                    print(data[arg])
 
 
 class DoesNotExist(Exception):
