@@ -1,7 +1,7 @@
 v0.2.0
 ======
 
-- Suppored event handling based on watchdog
+- Supported event handling based on watchdog
 - Added message receive feature
 - Introduced chat backend API
 - Changed several methods of Adium class
