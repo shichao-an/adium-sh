@@ -1,3 +1,9 @@
+v0.2.1
+======
+
+- Maintenance release
+- Fixed broken README RST rendering on PyPI
+
 v0.2.0
 ======
 
@@ -5,7 +11,6 @@ v0.2.0
 - Added message receive feature
 - Introduced chat backend API
 - Changed several methods of Adium class
-
 
 v0.1.1
 ======

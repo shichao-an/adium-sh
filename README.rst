@@ -1,5 +1,5 @@
 Adium Shell
-==========
+===========
 
 .. image:: https://pypip.in/v/adium-sh/badge.png
         :target: https://pypi.python.org/pypi/adium-sh
