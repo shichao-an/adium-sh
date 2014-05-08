@@ -233,7 +233,7 @@ class AdiumEventHandler(FileSystemEventHandler):
             event_type, event_time, sender, sender_alias, data)
         return True
 
-    def on_modified(self, event):
+    def on_any_event(self, event):
         if self.parse_event(event):
             if self.event_type is not None:
                 if self.adium_event.event_type == self.event_type:
