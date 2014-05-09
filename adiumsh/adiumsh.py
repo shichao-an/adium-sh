@@ -4,12 +4,13 @@ from bs4 import BeautifulSoup
 from dateutil.parser import parse as dateparse
 import glob
 import os
+import shutil
 import subprocess
 import time
 from watchdog.observers.kqueue import KqueueObserver as Observer
 from watchdog.events import FileSystemEventHandler
-from .utils import is_process_running, unescape, get_config
-from .settings import PACKAGE_PATH, LOG_PATH, CONFIG_PATH
+from .utils import (is_process_running, unescape, get_config, get_old_entries)
+from .settings import PACKAGE_PATH, LOG_PATH, CONFIG_PATH, MOVED_LOG_PATH
 from .settings import (EVENT_MESSAGE_RECEIVED, EVENT_MESSAGE_SENT,
                        EVENT_STATUS_AWAY, EVENT_STATUS_ONLINE,
                        EVENT_STATUS_OFFLINE, EVENT_STATUS_CONNECTED,
@@ -177,6 +178,10 @@ class AdiumEventHandler(FileSystemEventHandler):
         self.sender = sender  # TODO: change to senders (list of sender)
         self.adium_event = None
         self.src_path = os.path.join(LOG_PATH, service + '.' + account)
+        # Move old logs upon invokation of receive subcommand
+        # TODO: add perodic move when daemon feature is added, or logs may
+        # still overflow if instance is running for some time
+        move_old_logs(self.src_path)
         super(AdiumEventHandler, self).__init__()
 
     def parse_event(self, event):
@@ -263,6 +268,27 @@ def start_watchdog(event_handler):
     except Exception:
         raise
     observer.join()
+
+
+def move_old_logs(src_path):
+    """
+    Move old log directory entries of every buddy in `src_path`, which
+    specifies service and account. This keeps each buddy's directory has
+    limited number of chat log sub-directories.
+    """
+    dirname = os.path.basename(src_path)
+    dest_path = os.path.join(MOVED_LOG_PATH, dirname)
+    if not os.path.exists(dest_path):
+        os.makedirs(dest_path)
+    buddies = os.listdir(src_path)
+    for buddy_name in buddies:
+        src_buddy = os.path.join(src_path, buddy_name)
+        dest_buddy = os.path.join(dest_path, buddy_name)
+        if not os.path.exists(dest_buddy):
+            os.makedirs(dest_buddy)
+        old_entries = get_old_entries(src_buddy)
+        for old_entry in old_entries:
+            shutil.move(old_entry, dest_buddy)
 
 
 def main():

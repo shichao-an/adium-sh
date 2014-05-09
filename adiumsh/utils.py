@@ -36,3 +36,21 @@ def get_config_value(path, section, name):
 def unescape(text):
     entities = {"&apos;": "'", "&quot;": '"'}
     return saxutils.unescape(text, entities)
+
+
+def listdir_fullpath(d):
+    return [os.path.join(d, f) for f in os.listdir(d)]
+
+
+def get_old_entries(dirpath, at_least=5):
+    """
+    Get a list of n least recently modified entries of dirpath except the most
+    recently modified entry if any
+    :param at_least: `dirpath` must contain at least `at_least` entries,
+        or return empty list
+    """
+    entries = listdir_fullpath(dirpath)
+    if len(entries) < at_least:
+        return []
+    entries.sort(key=os.path.getmtime)
+    return entries[1:]
