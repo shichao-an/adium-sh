@@ -1,3 +1,9 @@
+v0.2.2
+======
+
+- Fixed bug #2 that does not respond to first message from a buddy
+- Added temporary fix for #2 related to Kqueue
+
 v0.2.1
 ======
 
