@@ -1,3 +1,8 @@
+v0.2.3
+======
+
+- Changed API: bind ``move_log_files`` to ``AdiumEventHandler``
+
 v0.2.2
 ======
 
