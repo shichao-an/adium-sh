@@ -178,10 +178,10 @@ class AdiumEventHandler(FileSystemEventHandler):
         self.sender = sender  # TODO: change to senders (list of sender)
         self.adium_event = None
         self.src_path = os.path.join(LOG_PATH, service + '.' + account)
-        # Move old logs upon invokation of receive subcommand
+        # Move old logs upon invocation of the "receive" subcommand
+        self.move_old_logs()
         # TODO: add perodic move when daemon feature is added, or logs may
         # still overflow if instance is running for some time
-        move_old_logs(self.src_path)
         super(AdiumEventHandler, self).__init__()
 
     def parse_event(self, event):
@@ -246,6 +246,27 @@ class AdiumEventHandler(FileSystemEventHandler):
             else:
                 self.callback(self.adium_event)
 
+    def move_old_logs(self):
+        """
+        Move old log directory entries of every buddy in `src_path`, which
+        specifies service and account. This keeps each buddy's directory has
+        limited number of chat log sub-directories.
+        """
+        src_path = self.src_path
+        dirname = os.path.basename(src_path)
+        dest_path = os.path.join(MOVED_LOG_PATH, dirname)
+        if not os.path.exists(dest_path):
+            os.makedirs(dest_path)
+        buddies = os.listdir(src_path)
+        for buddy_name in buddies:
+            src_buddy = os.path.join(src_path, buddy_name)
+            dest_buddy = os.path.join(dest_path, buddy_name)
+            if not os.path.exists(dest_buddy):
+                os.makedirs(dest_buddy)
+            old_entries = get_old_entries(src_buddy)
+            for old_entry in old_entries:
+                shutil.move(old_entry, dest_buddy)
+
 
 class AdiumEvent(object):
     def __init__(self, event_type, event_time, sender, sender_alias, data):
@@ -268,27 +289,6 @@ def start_watchdog(event_handler):
     except Exception:
         raise
     observer.join()
-
-
-def move_old_logs(src_path):
-    """
-    Move old log directory entries of every buddy in `src_path`, which
-    specifies service and account. This keeps each buddy's directory has
-    limited number of chat log sub-directories.
-    """
-    dirname = os.path.basename(src_path)
-    dest_path = os.path.join(MOVED_LOG_PATH, dirname)
-    if not os.path.exists(dest_path):
-        os.makedirs(dest_path)
-    buddies = os.listdir(src_path)
-    for buddy_name in buddies:
-        src_buddy = os.path.join(src_path, buddy_name)
-        dest_buddy = os.path.join(dest_path, buddy_name)
-        if not os.path.exists(dest_buddy):
-            os.makedirs(dest_buddy)
-        old_entries = get_old_entries(src_buddy)
-        for old_entry in old_entries:
-            shutil.move(old_entry, dest_buddy)
 
 
 def main():
