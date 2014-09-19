@@ -20,7 +20,7 @@ setup(
     license='BSD',
     install_requires=requirements,
     packages=find_packages(exclude=['tests']),
-    include_package_data=True,
+    #include_package_data=True,
     package_data={
         'adiumsh': ['*.scpt'],
     },

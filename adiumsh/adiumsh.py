@@ -178,6 +178,8 @@ class AdiumEventHandler(FileSystemEventHandler):
         self.sender = sender  # TODO: change to senders (list of sender)
         self.adium_event = None
         self.src_path = os.path.join(LOG_PATH, service + '.' + account)
+        if not os.path.exists(self.src_path):
+            os.makedirs(self.src_path)
         # Move old logs upon invocation of the "receive" subcommand
         self.move_old_logs()
         # TODO: add perodic move when daemon feature is added, or logs may
