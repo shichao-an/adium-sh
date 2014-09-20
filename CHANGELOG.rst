@@ -1,3 +1,9 @@
+v0.2.4
+======
+
+- Maintenance release
+- Fixed setup.py that does not include *.scpt in sdist
+
 v0.2.3
 ======
 
